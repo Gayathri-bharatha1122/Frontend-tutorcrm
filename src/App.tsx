@@ -245,7 +245,7 @@ export default function App() {
 
         {/* Authenticated Layout with Sidebar */}
         {!isPublicPage && (
-          <div className="flex h-full">
+          <div className="flex flex-col lg:flex-row min-h-screen">
             <Sidebar
               activeRole={activeRole}
               userName={currentProfileName}
