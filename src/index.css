@@ -1,0 +1,306 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Space Grotesk", sans-serif;
+
+  /* Main Color Themes */
+  --color-royal-blue: #1d4ed8;
+  --color-dark-navy: #030712;
+  --color-electric-cyan: #00f0ff;
+  --color-soft-purple: #8b5cf6;
+
+  /* Map existing Tailwind classes to our color system */
+  --color-slate-900: #0a0f1d;
+  --color-slate-950: #030712; /* Dark Navy Deep */
+  
+  --color-indigo-400: #00f0ff; /* Electric Cyan */
+  --color-indigo-500: #06b6d4; /* Electric Cyan Dim */
+  --color-indigo-600: #1d4ed8; /* Royal Blue */
+  --color-indigo-750: #1e3a8a; /* Deep Royal Blue */
+  --color-indigo-950: #060814; /* Dark Navy Slate */
+  
+  --color-teal-400: #00f0ff; /* Electric Cyan */
+  --color-teal-500: #00d8f6;
+  
+  --color-emerald-400: #a78bfa; /* Soft Purple */
+  --color-emerald-500: #8b5cf6; /* Soft Purple */
+  --color-emerald-600: #7c3aed; /* Deep Purple */
+  
+  --color-amber-500: #ec4899; /* Purple accent */
+}
+
+/* Custom premium backgrounds and animated components */
+.mesh-gradient-bg {
+.mesh-gradient-bg {
+  background-color: #1e293b; /* medium slate */
+  background-image: 
+    radial-gradient(at 15% 15%, rgba(30, 41, 59, 0.18) 0px, transparent 55%),
+    radial-gradient(at 85% 10%, rgba(30, 41, 59, 0.15) 0px, transparent 50%),
+    radial-gradient(at 45% 75%, rgba(30, 41, 59, 0.12) 0px, transparent 55%),
+    radial-gradient(at 80% 85%, rgba(30, 41, 59, 0.08) 0px, transparent 45%);
+}
+/* Override dark slate classes to a brighter medium tone */
+.bg-slate-950 { background-color: #475569 !important; }
+.bg-slate-900 { background-color: #64748b !important; }
+  background-size: 200% 200%;
+  animation: mesh-move 20s ease infinite alternate;
+}
+
+@keyframes mesh-move {
+  0% {
+    background-position: 0% 0%;
+  }
+  50% {
+    background-position: 100% 100%;
+  }
+  100% {
+    background-position: 0% 0%;
+  }
+}
+
+/* Light beams styling and animations */
+.light-beam-1 {
+  transform: rotate(-35deg) skewX(-10deg);
+  animation: beam-pulse-1 15s ease-in-out infinite alternate;
+}
+
+.light-beam-2 {
+  transform: rotate(40deg) skewX(15deg);
+  animation: beam-pulse-2 20s ease-in-out infinite alternate;
+}
+
+@keyframes beam-pulse-1 {
+  0% {
+    opacity: 0.03;
+    transform: rotate(-35deg) skewX(-10deg) scale(0.9);
+  }
+  50% {
+    opacity: 0.09;
+    transform: rotate(-32deg) skewX(-8deg) scale(1.08);
+  }
+  100% {
+    opacity: 0.03;
+    transform: rotate(-35deg) skewX(-10deg) scale(0.9);
+  }
+}
+
+@keyframes beam-pulse-2 {
+  0% {
+    opacity: 0.02;
+    transform: rotate(40deg) skewX(15deg) scale(0.95);
+  }
+  50% {
+    opacity: 0.07;
+    transform: rotate(43deg) skewX(12deg) scale(1.12);
+  }
+  100% {
+    opacity: 0.02;
+    transform: rotate(40deg) skewX(15deg) scale(0.95);
+  }
+}
+
+/* Particles float keyframes */
+@keyframes particle-float {
+  0% {
+    transform: translateY(100vh) translateX(0) scale(0.8);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.6;
+  }
+  90% {
+    opacity: 0.4;
+  }
+  100% {
+    transform: translateY(-20vh) translateX(50px) scale(1.2);
+    opacity: 0;
+  }
+}
+
+.wave-animation-1 {
+  animation: wave-move-1 25s cubic-bezier(0.36, 0.45, 0.63, 0.53) infinite;
+}
+
+.wave-animation-2 {
+  animation: wave-move-2 18s cubic-bezier(0.36, 0.45, 0.63, 0.53) infinite;
+}
+
+@keyframes wave-move-1 {
+  0% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(-25%);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+@keyframes wave-move-2 {
+  0% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(25%);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+/* 3D Premium Hover Tilt */
+.premium-card-3d {
+  transition: transform 0.4s cubic-bezier(0.1, 0.8, 0.2, 1), box-shadow 0.4s cubic-bezier(0.1, 0.8, 0.2, 1);
+  transform-style: preserve-3d;
+}
+
+.premium-card-3d:hover {
+  transform: perspective(1000px) rotateY(4deg) rotateX(-4deg) translateY(-6px) scale3d(1.02, 1.02, 1.02);
+  box-shadow: 
+    0 20px 40px -15px rgba(29, 78, 216, 0.25), 
+    0 0 30px -5px rgba(0, 240, 255, 0.15);
+}
+
+
+html, body, #root {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Custom Premium Animations & Micro-Interactions */
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes float-delayed {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-12px);
+  }
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    opacity: 0.15;
+    transform: scale(1) translate(-50%, -50%);
+  }
+  50% {
+    opacity: 0.3;
+    transform: scale(1.1) translate(-50%, -50%);
+  }
+}
+
+@keyframes shine {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 150%;
+  }
+}
+
+/* 3D Perspective and Card Hover Classes */
+.perspective-1000 {
+  perspective: 1000px;
+}
+
+.transform-style-3d {
+  transform-style: preserve-3d;
+}
+
+.backface-hidden {
+  backface-visibility: hidden;
+}
+
+.animate-float-slow {
+  animation: float 6s ease-in-out infinite;
+}
+
+.animate-float-delayed {
+  animation: float-delayed 8s ease-in-out infinite;
+}
+
+/* Sheen / Shine Effect on Buttons and Cards */
+.btn-shine-effect {
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-shine-effect::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.25) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  transform: skewX(-20deg);
+  transition: none;
+  pointer-events: none;
+}
+
+.btn-shine-effect:hover::after {
+  animation: shine 1s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Ripple simulation on active click */
+.btn-ripple {
+  transition: transform 0.1s ease;
+}
+
+.btn-ripple:active {
+  transform: scale(0.95);
+}
+
+/* Smooth Focus Glow for Input Fields */
+.input-focus-glow {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.input-focus-glow:focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15);
+}
+
+/* Custom interactive Nav Underline */
+.nav-link-hover {
+  position: relative;
+}
+
+.nav-link-hover::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background-color: #6366f1;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.nav-link-hover:hover::after {
+  transform: scaleX(1);
+}
+
+

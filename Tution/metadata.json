@@ -1,0 +1,6 @@
+{
+  "name": "EduManage CRM",
+  "description": "Empower your tutoring business with a CRM built for administrators. Manage students, automate billing, and analyze academic performance easily.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
