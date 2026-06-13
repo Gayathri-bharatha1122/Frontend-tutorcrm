@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../services/api';
 import { motion, AnimatePresence } from 'motion/react';
-import { 
-  Users, 
-  GraduationCap, 
-  Activity, 
-  IndianRupee, 
-  Plus, 
-  Search, 
-  Download, 
-  Filter, 
+import {
+  Users,
+  GraduationCap,
+  Activity,
+  IndianRupee,
+  Plus,
+  Search,
+  Download,
+  Filter,
   Trash2,
   CheckCircle,
   PlusCircle,
@@ -36,7 +36,10 @@ const AVAILABLE_COURSES = [
   'Calculus BC',
   'Chemistry Honors',
   'AP Literature',
-  'Organic Chemistry'
+  'Organic Chemistry',
+  'Maths',
+  'Computer',
+  'English'
 ];
 
 const AnimatedCounter: React.FC<{ value: number; duration?: number; prefix?: string; suffix?: string; decimals?: number }> = ({ value, duration = 1000, prefix = '', suffix = '', decimals = 0 }) => {
@@ -66,7 +69,7 @@ interface AdminDashboardProps {
   onHome: () => void;
 }
 
-export const AdminDashboard: React.FC<AdminDashboardProps> = ({ 
+export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   currentPath,
   onLogout,
   onHome
@@ -76,7 +79,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const [activityLogs, setActivityLogs] = useState<ActivityLog[]>([]);
 
   const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'students' | 'tutors' | 'parents' | 'courses' | 'fees' | 'reports' | 'settings'>('overview');
-  
+
   useEffect(() => {
     if (currentPath) {
       if (currentPath.includes('/students')) setActiveTab('students');
@@ -88,25 +91,25 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       else if (currentPath.includes('/reports')) setActiveTab('reports');
       else if (currentPath.includes('/settings')) setActiveTab('settings');
       else setActiveTab('overview');
-      
+
       // Clear detail views when navigating
       setSelectedStudentDetail(null);
       setSelectedTutorDetail(null);
     }
   }, [currentPath]);
-  
+
   // Detail Views
   const [selectedStudentDetail, setSelectedStudentDetail] = useState<any>(null);
   const [selectedTutorDetail, setSelectedTutorDetail] = useState<any>(null);
-  
+
   // Modals state
   const [studentModalOpen, setStudentModalOpen] = useState(false);
   const [tutorModalOpen, setTutorModalOpen] = useState(false);
-  const [editingStudent, setEditingStudent] = useState<any>(null); 
-  const [editingTutor, setEditingTutor] = useState<any>(null); 
+  const [editingStudent, setEditingStudent] = useState<any>(null);
+  const [editingTutor, setEditingTutor] = useState<any>(null);
   const [isNotificationDropdownOpen, setIsNotificationDropdownOpen] = useState(false);
   const [tutorFormSalaryStatus, setTutorFormSalaryStatus] = useState<'Credited' | 'Pending'>('Pending');
-  const [tutorFormAttendance, setTutorFormAttendance] = useState('95%'); 
+  const [tutorFormAttendance, setTutorFormAttendance] = useState('95%');
 
   // Modal form fields - Student
   const [studentFormFirstName, setStudentFormFirstName] = useState('');
@@ -332,7 +335,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         await api.deleteStudent(studentId);
         setAdminNotification(t('Deleted student {name}').replace('{name}', studentName));
         setTimeout(() => setAdminNotification(null), 4000);
-        
+
         const updatedStudents = await api.getAdminStudents();
         setStudents(updatedStudents);
         const updatedLogs = await api.getActivityLogs();
@@ -353,7 +356,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         await api.deleteTutor(tutorId);
         setAdminNotification(t('Deleted tutor {name}').replace('{name}', tutorName));
         setTimeout(() => setAdminNotification(null), 4000);
-        
+
         const updatedTeachers = await api.getTeachers();
         setTeachers(updatedTeachers);
 
@@ -388,9 +391,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   };
 
   const filteredStudents = students.filter(st => {
-    const matchesSearch = st.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                          st.subject.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                          st.phone.includes(searchQuery);
+    const matchesSearch = st.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      st.subject.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      st.phone.includes(searchQuery);
     const matchesStatus = statusFilter === 'All' ? true : st.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
@@ -401,7 +404,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 font-sans">
-      
+
       {/* Top Console Command Header */}
       <nav className="border-b border-slate-900 bg-slate-950/80 backdrop-blur sticky top-0 z-40">
         <div className="w-full px-4 sm:px-8 lg:px-12 h-16 flex items-center justify-between">
@@ -417,7 +420,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
           <div className="flex items-center gap-4">
             <div className="relative">
-              <button 
+              <button
                 onClick={() => setIsNotificationDropdownOpen(!isNotificationDropdownOpen)}
                 className={`p-1.5 hover:bg-slate-900 rounded-lg transition relative cursor-pointer ${isNotificationDropdownOpen ? 'bg-slate-900 text-indigo-400' : 'text-slate-400 hover:text-indigo-400'}`}
               >
@@ -429,8 +432,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 {isNotificationDropdownOpen && (
                   <>
                     <div className="fixed inset-0 z-40" onClick={() => setIsNotificationDropdownOpen(false)} />
-                    
-                    <motion.div 
+
+                    <motion.div
                       initial={{ opacity: 0, y: 10, scale: 0.95 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 10, scale: 0.95 }}
@@ -438,7 +441,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     >
                       <div className="flex justify-between items-center border-b border-slate-850 pb-2">
                         <span className="font-bold text-white">{t('System Notifications')}</span>
-                        <button 
+                        <button
                           onClick={() => setIsNotificationDropdownOpen(false)}
                           className="text-[10px] text-slate-500 hover:text-white"
                         >
@@ -450,11 +453,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                         {activityLogs.slice(0, 5).map((log) => (
                           <div key={log.id} className="p-2.5 bg-slate-950 border border-slate-850 rounded-xl space-y-1">
                             <div className="flex justify-between items-start gap-1">
-                              <span className={`px-1.5 py-0.5 rounded text-[8px] font-bold ${
-                                log.type === 'New Enrollment' ? 'bg-indigo-500/15 text-indigo-400 border border-indigo-500/30' :
-                                log.type === 'Fee Payment' ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30' :
-                                'bg-slate-800 text-slate-400'
-                              }`}>
+                              <span className={`px-1.5 py-0.5 rounded text-[8px] font-bold ${log.type === 'New Enrollment' ? 'bg-indigo-500/15 text-indigo-400 border border-indigo-500/30' :
+                                  log.type === 'Fee Payment' ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30' :
+                                    'bg-slate-800 text-slate-400'
+                                }`}>
                                 {t(log.type)}
                               </span>
                               <span className="text-[8px] text-slate-500 font-mono">{log.dateTime}</span>
@@ -477,7 +479,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 <span className="text-[10px] text-slate-500 font-medium font-mono">root_user_01</span>
               </div>
               <LanguageSelector />
-              <button 
+              <button
                 onClick={onHome}
                 className="px-3.5 py-1.5 bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-slate-700 text-xs text-slate-200 font-semibold rounded-lg transition-transform cursor-pointer"
               >
@@ -491,11 +493,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
       {/* Main Grid Workspace */}
       <main className="w-full px-4 sm:px-8 lg:px-12 py-8 space-y-8 relative z-10">
-        
+
         {/* Real-time reactive notifications popup */}
         <AnimatePresence>
           {adminNotification && (
-            <motion.div 
+            <motion.div
               initial={{ height: 0, opacity: 0, y: -10 }}
               animate={{ height: 'auto', opacity: 1, y: 0 }}
               exit={{ height: 0, opacity: 0, y: -10 }}
@@ -514,7 +516,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
         {/* Global Pending Banner */}
         {!selectedStudentDetail && !selectedTutorDetail && pendingStudentsCount > 0 && activeTab !== 'overview' && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             className="bg-amber-500/10 border border-amber-500/30 rounded-2xl p-4 text-amber-400 text-xs font-semibold flex items-center justify-between shadow-lg"
@@ -531,31 +533,28 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           <div className="flex border-b border-slate-900 bg-slate-900/40 p-1 gap-2 rounded-xl border border-slate-900/60 max-w-md">
             <button
               onClick={() => setActiveTab('overview')}
-              className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
-                activeTab === 'overview'
+              className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer ${activeTab === 'overview'
                   ? 'bg-indigo-600 text-white shadow-md'
                   : 'text-slate-400 hover:text-white hover:bg-slate-900'
-              }`}
+                }`}
             >
               {t('Console Overview')}
             </button>
             <button
               onClick={() => setActiveTab('students')}
-              className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
-                activeTab === 'students'
+              className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer ${activeTab === 'students'
                   ? 'bg-indigo-600 text-white shadow-md'
                   : 'text-slate-400 hover:text-white hover:bg-slate-900'
-              }`}
+                }`}
             >
               {t('Manage Students')}
             </button>
             <button
               onClick={() => setActiveTab('tutors')}
-              className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
-                activeTab === 'tutors'
+              className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer ${activeTab === 'tutors'
                   ? 'bg-indigo-600 text-white shadow-md'
                   : 'text-slate-400 hover:text-white hover:bg-slate-900'
-              }`}
+                }`}
             >
               {t('Manage Tutors')}
             </button>
@@ -564,7 +563,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
         {/* DETAILS SCREEN - STUDENT */}
         {selectedStudentDetail && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             className="space-y-6"
@@ -602,11 +601,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 <div>
                   <div className="flex items-center gap-3 flex-wrap">
                     <h2 className="text-xl font-extrabold text-white">{selectedStudentDetail.name}</h2>
-                    <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
-                      selectedStudentDetail.status === 'Active' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30' :
-                      selectedStudentDetail.status === 'Pending' ? 'bg-amber-500/10 text-amber-400 border border-emerald-500/30' :
-                      'bg-slate-950 text-slate-500 border border-slate-800'
-                    }`}>
+                    <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${selectedStudentDetail.status === 'Active' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30' :
+                        selectedStudentDetail.status === 'Pending' ? 'bg-amber-500/10 text-amber-400 border border-emerald-500/30' :
+                          'bg-slate-950 text-slate-500 border border-slate-800'
+                      }`}>
                       {t(selectedStudentDetail.status)}
                     </span>
                   </div>
@@ -641,14 +639,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
             {/* Performance and Connected Ledger Lists */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              
+
               {/* Metrics & Goal */}
               <div className="bg-slate-905 border border-slate-800 rounded-3xl p-6 space-y-6 bg-slate-900">
                 <div>
                   <h3 className="text-sm font-bold text-white mb-1">{t('Academic Metrics')}</h3>
                   <span className="text-[11px] text-slate-550">{t('Current progress and average scores')}</span>
                 </div>
-                
+
                 <div className="space-y-4">
                   <div className="bg-slate-950 p-4 rounded-xl border border-slate-850">
                     <span className="text-[10px] text-slate-550 font-bold uppercase block mb-1 text-slate-500">{t('Assigned subject')}</span>
@@ -704,11 +702,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                             <td className="p-3 text-slate-400 font-mono text-[10px]">{t(bill.paidDate)}</td>
                             <td className="p-3 text-slate-202 font-mono font-bold text-slate-200">₹{bill.amount}</td>
                             <td className="p-3 text-right">
-                              <span className={`px-2 py-0.5 rounded text-[9px] font-bold ${
-                                bill.status === 'Paid' ? 'bg-emerald-500/10 text-emerald-400' :
-                                bill.status === 'Overdue' ? 'bg-rose-500/10 text-rose-400' :
-                                'bg-amber-500/10 text-amber-400'
-                              }`}>
+                              <span className={`px-2 py-0.5 rounded text-[9px] font-bold ${bill.status === 'Paid' ? 'bg-emerald-500/10 text-emerald-400' :
+                                  bill.status === 'Overdue' ? 'bg-rose-500/10 text-rose-400' :
+                                    'bg-amber-500/10 text-amber-400'
+                                }`}>
                                 {t(bill.status)}
                               </span>
                             </td>
@@ -749,22 +746,20 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       selectedStudentDetail.activityLogs.map((log: any) => (
                         <tr key={log._id || log.id} className="hover:bg-slate-900/40">
                           <td className="p-3">
-                            <span className={`px-2 py-0.5 rounded-lg text-[9px] font-bold ${
-                              log.type === 'New Enrollment' ? 'bg-indigo-500/15 text-indigo-400 border border-indigo-500/30' :
-                              log.type === 'Fee Payment' ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30' :
-                              'bg-slate-800 text-slate-400'
-                            }`}>
+                            <span className={`px-2 py-0.5 rounded-lg text-[9px] font-bold ${log.type === 'New Enrollment' ? 'bg-indigo-500/15 text-indigo-400 border border-indigo-500/30' :
+                                log.type === 'Fee Payment' ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30' :
+                                  'bg-slate-800 text-slate-400'
+                              }`}>
                               {t(log.type)}
                             </span>
                           </td>
                           <td className="p-3 text-slate-350">{t(log.detail)}</td>
                           <td className="p-3 text-slate-500 font-mono text-[10px]">{log.dateTime}</td>
                           <td className="p-3 text-right">
-                            <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold ${
-                              log.status === 'Completed' ? 'bg-emerald-500/10 text-emerald-400' :
-                              log.status === 'Failed' ? 'bg-rose-500/10 text-rose-400' :
-                              'bg-slate-800 text-slate-500'
-                            }`}>
+                            <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold ${log.status === 'Completed' ? 'bg-emerald-500/10 text-emerald-400' :
+                                log.status === 'Failed' ? 'bg-rose-500/10 text-rose-400' :
+                                  'bg-slate-800 text-slate-500'
+                              }`}>
                               {t(log.status)}
                             </span>
                           </td>
@@ -785,7 +780,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         )}
         {/* DETAILS SCREEN - TUTOR */}
         {selectedTutorDetail && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             className="space-y-6"
@@ -823,10 +818,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 <div>
                   <div className="flex items-center gap-3 flex-wrap">
                     <h2 className="text-xl font-extrabold text-white">{selectedTutorDetail.name}</h2>
-                    <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
-                      selectedTutorDetail.status === 'Active' ? 'bg-teal-500/10 text-teal-400 border border-teal-500/30' :
-                      'bg-slate-950 text-slate-500 border border-slate-800'
-                    }`}>
+                    <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${selectedTutorDetail.status === 'Active' ? 'bg-teal-500/10 text-teal-400 border border-teal-500/30' :
+                        'bg-slate-950 text-slate-500 border border-slate-800'
+                      }`}>
                       {t(selectedTutorDetail.status)}
                     </span>
                   </div>
@@ -854,7 +848,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
             {/* Performance and Connected Ledger Lists */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              
+
               {/* Primary Subject */}
               <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 space-y-4">
                 <div>
@@ -915,9 +909,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   <IndianRupee className="h-5 w-5 text-amber-400" />
                   <div>
                     <span className="text-[9px] text-slate-550 font-bold uppercase block">{t('Payment Status')}</span>
-                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                      selectedTutorDetail.salaryStatus === 'Credited' ? 'bg-emerald-500/15 text-emerald-400' : 'bg-amber-500/15 text-amber-450'
-                    }`}>
+                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${selectedTutorDetail.salaryStatus === 'Credited' ? 'bg-emerald-500/15 text-emerald-400' : 'bg-amber-500/15 text-amber-450'
+                      }`}>
                       {t(selectedTutorDetail.salaryStatus || 'Pending')}
                     </span>
                   </div>
@@ -929,14 +922,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         )}
         {/* VIEW 1 - CONSOLE OVERVIEW */}
         {!selectedStudentDetail && !selectedTutorDetail && activeTab === 'overview' && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             className="space-y-8"
           >
             {/* Highlight Metrics Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.05, duration: 0.5 }}
@@ -955,7 +948,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 </div>
               </motion.div>
 
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1, duration: 0.5 }}
@@ -974,7 +967,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 </div>
               </motion.div>
 
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.15, duration: 0.5 }}
@@ -993,7 +986,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 </div>
               </motion.div>
 
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2, duration: 0.5 }}
@@ -1038,16 +1031,16 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       <div className="absolute -top-10 opacity-0 group-hover:opacity-100 transition duration-200 bg-indigo-600 text-white font-extrabold text-[10px] px-2.5 py-1 rounded shadow-lg z-20 pointer-events-none">
                         {t('{count} Students').replace('{count}', bar.count.toString())}
                       </div>
-                      
+
                       {/* Visual column bar */}
-                      <motion.div 
+                      <motion.div
                         initial={{ scaleY: 0 }}
                         whileInView={{ scaleY: 1 }}
                         viewport={{ once: true }}
                         transition={{ delay: i * 0.1, duration: 0.6 }}
                         className={`w-full rounded-t-lg origin-bottom transition-all duration-300 group-hover:brightness-110 ${bar.heightClass} ${bar.color}`}
                       />
-                      
+
                       {/* Label */}
                       <span className="text-[10px] text-slate-500 font-semibold">{t(bar.period)}</span>
                     </div>
@@ -1066,18 +1059,18 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 <div className="flex justify-center items-center relative h-36">
                   <svg className="w-32 h-32 transform -rotate-90">
                     <circle cx="64" cy="64" r="50" fill="transparent" stroke="#1e293b" strokeWidth="12" />
-                    <motion.circle cx="64" cy="64" r="50" fill="transparent" stroke="#6366f1" strokeWidth="12" 
-                            strokeDasharray="314" 
-                            initial={{ strokeDashoffset: 314 }}
-                            animate={{ strokeDashoffset: 110 }}
-                            transition={{ duration: 1.2, ease: "easeOut" }}
-                            strokeLinecap="round" />
-                    <motion.circle cx="64" cy="64" r="50" fill="transparent" stroke="#06b6d4" strokeWidth="12" 
-                            strokeDasharray="314" 
-                            initial={{ strokeDashoffset: 314 }}
-                            animate={{ strokeDashoffset: 260 }}
-                            transition={{ duration: 1.2, ease: "easeOut", delay: 0.25 }}
-                            strokeLinecap="round" />
+                    <motion.circle cx="64" cy="64" r="50" fill="transparent" stroke="#6366f1" strokeWidth="12"
+                      strokeDasharray="314"
+                      initial={{ strokeDashoffset: 314 }}
+                      animate={{ strokeDashoffset: 110 }}
+                      transition={{ duration: 1.2, ease: "easeOut" }}
+                      strokeLinecap="round" />
+                    <motion.circle cx="64" cy="64" r="50" fill="transparent" stroke="#06b6d4" strokeWidth="12"
+                      strokeDasharray="314"
+                      initial={{ strokeDashoffset: 314 }}
+                      animate={{ strokeDashoffset: 260 }}
+                      transition={{ duration: 1.2, ease: "easeOut", delay: 0.25 }}
+                      strokeLinecap="round" />
                   </svg>
                   <div className="absolute text-center">
                     <span className="text-lg font-extrabold text-white block">
@@ -1127,7 +1120,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                         <tr key={student.id} className="hover:bg-slate-900/40 transition">
                           <td className="p-4">
                             <div className="flex items-center gap-3">
-                              <div 
+                              <div
                                 onClick={() => viewStudentDetails(student.id)}
                                 className="w-8 h-8 rounded-full bg-indigo-900/45 text-indigo-400 border border-indigo-500/20 font-bold flex items-center justify-center cursor-pointer hover:bg-indigo-800 transition"
                               >
@@ -1135,7 +1128,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                               </div>
                               <div>
                                 <div className="flex items-center gap-2 mb-0.5">
-                                  <span 
+                                  <span
                                     onClick={() => viewStudentDetails(student.id)}
                                     className="font-bold text-white block hover:text-indigo-400 cursor-pointer hover:underline animate-pulse"
                                   >
@@ -1164,7 +1157,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                                     const res = await api.approveStudent(student.id, 'accept');
                                     setAdminNotification(res.msg || t('Accepted {name}').replace('{name}', student.name));
                                     setTimeout(() => setAdminNotification(null), 4000);
-                                    
+
                                     // Refresh data
                                     const [updatedStudents, updatedLogs] = await Promise.all([
                                       api.getAdminStudents(),
@@ -1187,7 +1180,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                                       const res = await api.approveStudent(student.id, 'decline');
                                       setAdminNotification(res.msg || t('Declined {name}').replace('{name}', student.name));
                                       setTimeout(() => setAdminNotification(null), 4000);
-                                      
+
                                       // Refresh data
                                       const [updatedStudents, updatedLogs] = await Promise.all([
                                         api.getAdminStudents(),
@@ -1239,12 +1232,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                           {log.studentName}
                         </td>
                         <td className="p-3">
-                          <span className={`px-2 py-0.5 rounded-lg text-[9px] font-bold ${
-                            log.type === 'New Enrollment' ? 'bg-indigo-500/15 text-indigo-400 border border-indigo-500/30' :
-                            log.type === 'Fee Payment' ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30' :
-                            log.type === 'Payment Failed' ? 'bg-red-500/15 text-red-400 border border-red-500/30' :
-                            'bg-slate-800 text-slate-400'
-                          }`}>
+                          <span className={`px-2 py-0.5 rounded-lg text-[9px] font-bold ${log.type === 'New Enrollment' ? 'bg-indigo-500/15 text-indigo-400 border border-indigo-500/30' :
+                              log.type === 'Fee Payment' ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30' :
+                                log.type === 'Payment Failed' ? 'bg-red-500/15 text-red-400 border border-red-500/30' :
+                                  'bg-slate-800 text-slate-400'
+                            }`}>
                             {t(log.type)}
                           </span>
                         </td>
@@ -1256,11 +1248,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                           {log.dateTime}
                         </td>
                         <td className="p-3 text-right">
-                          <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold ${
-                            log.status === 'Completed' ? 'bg-emerald-500/10 text-emerald-400 font-semibold' :
-                            log.status === 'Failed' ? 'bg-rose-500/10 text-rose-400 font-semibold' :
-                            'bg-slate-800 text-slate-405'
-                          }`}>
+                          <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold ${log.status === 'Completed' ? 'bg-emerald-500/10 text-emerald-400 font-semibold' :
+                              log.status === 'Failed' ? 'bg-rose-500/10 text-rose-400 font-semibold' :
+                                'bg-slate-800 text-slate-405'
+                            }`}>
                             {t(log.status)}
                           </span>
                         </td>
@@ -1275,7 +1266,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
         {/* VIEW 2 - STUDENT DIRECTORY & CRUD */}
         {!selectedStudentDetail && !selectedTutorDetail && activeTab === 'students' && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             className="bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden shadow-xl"
@@ -1304,11 +1295,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     <button
                       key={filter}
                       onClick={() => setStatusFilter(filter)}
-                      className={`px-3 py-1 rounded-lg transition capitalize cursor-pointer ${
-                        statusFilter === filter 
-                          ? 'bg-slate-900 text-white' 
+                      className={`px-3 py-1 rounded-lg transition capitalize cursor-pointer ${statusFilter === filter
+                          ? 'bg-slate-900 text-white'
                           : 'text-slate-500 hover:text-slate-300'
-                      }`}
+                        }`}
                     >
                       {t(filter)}
                     </button>
@@ -1340,7 +1330,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 <tbody className="divide-y divide-slate-850">
                   {filteredStudents.length > 0 ? (
                     filteredStudents.map((student, sIdx) => (
-                      <motion.tr 
+                      <motion.tr
                         key={student.id}
                         initial={{ opacity: 0, y: 8 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -1349,14 +1339,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       >
                         <td className="p-4">
                           <div className="flex items-center gap-3">
-                            <div 
+                            <div
                               onClick={() => viewStudentDetails(student.id)}
                               className="w-8 h-8 rounded-full bg-indigo-900/45 text-indigo-400 border border-indigo-500/20 font-bold flex items-center justify-center cursor-pointer hover:bg-indigo-800 transition shrink-0"
                             >
                               {student.initials || student.name[0]}
                             </div>
                             <div>
-                              <span 
+                              <span
                                 onClick={() => viewStudentDetails(student.id)}
                                 className="font-bold text-white block hover:text-indigo-400 cursor-pointer hover:underline text-sm"
                               >
@@ -1370,11 +1360,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                         <td className="p-4 text-slate-400 font-mono text-[11px]">{student.phone}</td>
                         <td className="p-4 text-slate-500 font-mono text-[11px]">{student.parentPhone || t('Unlinked')}</td>
                         <td className="p-4">
-                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                            student.status === 'Active' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30' :
-                            student.status === 'Pending' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/30' :
-                            'bg-slate-950 text-slate-500 border border-slate-800'
-                          }`}>
+                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${student.status === 'Active' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30' :
+                              student.status === 'Pending' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/30' :
+                                'bg-slate-950 text-slate-500 border border-slate-800'
+                            }`}>
                             {t(student.status)}
                           </span>
                         </td>
@@ -1412,7 +1401,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         )}
         {/* VIEW 3 - TUTOR DIRECTORY & CRUD */}
         {!selectedStudentDetail && !selectedTutorDetail && activeTab === 'tutors' && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             className="bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden shadow-xl"
@@ -1449,7 +1438,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 <tbody className="divide-y divide-slate-850">
                   {teachers.length > 0 ? (
                     teachers.map((teacher, tIdx) => (
-                      <motion.tr 
+                      <motion.tr
                         key={teacher.id}
                         initial={{ opacity: 0, y: 8 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -1458,14 +1447,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       >
                         <td className="p-4">
                           <div className="flex items-center gap-3">
-                            <div 
+                            <div
                               onClick={() => viewTutorDetails(teacher.id)}
                               className="w-8 h-8 rounded-full bg-teal-900/45 text-teal-400 border border-teal-500/20 font-bold flex items-center justify-center cursor-pointer hover:bg-teal-800 transition shrink-0"
                             >
                               {teacher.firstName?.[0] || teacher.name?.[6] || 'T'}
                             </div>
                             <div>
-                              <span 
+                              <span
                                 onClick={() => viewTutorDetails(teacher.id)}
                                 className="font-bold text-white block hover:text-teal-400 cursor-pointer hover:underline text-sm"
                               >
@@ -1489,17 +1478,15 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                           {teacher.attendance || '96%'}
                         </td>
                         <td className="p-4 text-center">
-                          <span className={`px-2.5 py-0.5 rounded text-[10px] font-bold ${
-                            teacher.salaryStatus === 'Credited' ? 'bg-emerald-500/15 text-emerald-400' : 'bg-amber-500/15 text-amber-450'
-                          }`}>
+                          <span className={`px-2.5 py-0.5 rounded text-[10px] font-bold ${teacher.salaryStatus === 'Credited' ? 'bg-emerald-500/15 text-emerald-400' : 'bg-amber-500/15 text-amber-450'
+                            }`}>
                             {t(teacher.salaryStatus || 'Pending')}
                           </span>
                         </td>
                         <td className="p-4 text-center">
-                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                            teacher.status === 'Active' ? 'bg-teal-500/10 text-teal-400 border border-teal-500/30' :
-                            'bg-slate-950 border border-slate-800 text-slate-500'
-                          }`}>
+                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${teacher.status === 'Active' ? 'bg-teal-500/10 text-teal-400 border border-teal-500/30' :
+                              'bg-slate-950 border border-slate-800 text-slate-500'
+                            }`}>
                             {t(teacher.status)}
                           </span>
                         </td>
@@ -1538,7 +1525,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
         {/* VIEW 4 - PARENTS */}
         {!selectedStudentDetail && !selectedTutorDetail && activeTab === 'parents' && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             className="bg-slate-900 border border-slate-800 rounded-3xl p-8 text-center shadow-xl"
@@ -1551,7 +1538,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
         {/* VIEW 5 - USERS */}
         {!selectedStudentDetail && !selectedTutorDetail && activeTab === 'users' && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             className="bg-slate-900 border border-slate-800 rounded-3xl p-8 text-center shadow-xl"
@@ -1564,7 +1551,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
         {/* VIEW 6 - COURSES */}
         {!selectedStudentDetail && !selectedTutorDetail && activeTab === 'courses' && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             className="bg-slate-900 border border-slate-800 rounded-3xl p-8 text-center shadow-xl"
@@ -1577,7 +1564,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
         {/* VIEW 7 - FEES */}
         {!selectedStudentDetail && !selectedTutorDetail && activeTab === 'fees' && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             className="bg-slate-900 border border-slate-800 rounded-3xl p-8 text-center shadow-xl"
@@ -1590,7 +1577,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
         {/* VIEW 8 - REPORTS */}
         {!selectedStudentDetail && !selectedTutorDetail && activeTab === 'reports' && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             className="bg-slate-900 border border-slate-800 rounded-3xl p-8 text-center shadow-xl"
@@ -1603,7 +1590,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
         {/* VIEW 9 - SETTINGS */}
         {!selectedStudentDetail && !selectedTutorDetail && activeTab === 'settings' && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             className="bg-slate-900 border border-slate-800 rounded-3xl p-8 text-center shadow-xl"
@@ -1619,14 +1606,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       <AnimatePresence>
         {studentModalOpen && (
           <>
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 0.5 }}
               exit={{ opacity: 0 }}
               className="fixed inset-0 bg-black/60 z-40 backdrop-blur-sm"
               onClick={() => setStudentModalOpen(false)}
             />
-            <motion.div 
+            <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
@@ -1641,7 +1628,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     {editingStudent ? t('Update registration database properties') : t('Register a new active student')}
                   </span>
                 </div>
-                <button 
+                <button
                   onClick={() => setStudentModalOpen(false)}
                   className="p-1.5 hover:bg-slate-800 rounded-lg text-slate-400 hover:text-white transition cursor-pointer"
                 >
@@ -1784,14 +1771,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       <AnimatePresence>
         {tutorModalOpen && (
           <>
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 0.5 }}
               exit={{ opacity: 0 }}
               className="fixed inset-0 bg-black/60 z-40 backdrop-blur-sm"
               onClick={() => setTutorModalOpen(false)}
             />
-            <motion.div 
+            <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
@@ -1806,7 +1793,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     {editingTutor ? t('Update academic faculty database records') : t('Introduce a new certified educator')}
                   </span>
                 </div>
-                <button 
+                <button
                   onClick={() => setTutorModalOpen(false)}
                   className="p-1.5 hover:bg-slate-800 rounded-lg text-slate-400 hover:text-white transition cursor-pointer"
                 >
