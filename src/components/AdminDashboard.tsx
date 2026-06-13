@@ -77,6 +77,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const [students, setStudents] = useState<Student[]>([]);
   const [teachers, setTeachers] = useState<Teacher[]>([]);
   const [activityLogs, setActivityLogs] = useState<ActivityLog[]>([]);
+  const [metrics, setMetrics] = useState<any>(null);
 
   const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'students' | 'tutors' | 'parents' | 'courses' | 'fees' | 'reports' | 'settings'>('overview');
 
@@ -134,6 +135,16 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const [tutorFormPassword, setTutorFormPassword] = useState('');
 
   useEffect(() => {
+    const fetchMetrics = async () => {
+      try {
+        const metricsData = await api.getAdminMetrics();
+        setMetrics(metricsData);
+      } catch (err) {
+        console.error("Failed to load admin metrics", err);
+      }
+    };
+    fetchMetrics();
+
     const fetchData = async () => {
       try {
         const [studentsData, teachersData, logsData] = await Promise.all([
@@ -263,6 +274,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       setStudentModalOpen(false);
 
       // Refresh lists
+      api.getAdminMetrics().then(setMetrics).catch(console.error);
       const updatedStudents = await api.getAdminStudents();
       setStudents(updatedStudents);
       const updatedLogs = await api.getActivityLogs();
@@ -317,6 +329,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       setTutorModalOpen(false);
 
       // Refresh list
+      api.getAdminMetrics().then(setMetrics).catch(console.error);
       const updatedTeachers = await api.getTeachers();
       setTeachers(updatedTeachers);
 
@@ -336,6 +349,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         setAdminNotification(t('Deleted student {name}').replace('{name}', studentName));
         setTimeout(() => setAdminNotification(null), 4000);
 
+        api.getAdminMetrics().then(setMetrics).catch(console.error);
         const updatedStudents = await api.getAdminStudents();
         setStudents(updatedStudents);
         const updatedLogs = await api.getActivityLogs();
@@ -357,6 +371,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         setAdminNotification(t('Deleted tutor {name}').replace('{name}', tutorName));
         setTimeout(() => setAdminNotification(null), 4000);
 
+        api.getAdminMetrics().then(setMetrics).catch(console.error);
         const updatedTeachers = await api.getTeachers();
         setTeachers(updatedTeachers);
 
@@ -942,9 +957,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 <span className="text-[11px] font-bold text-slate-500 uppercase">{t('Active Students')}</span>
                 <div className="mt-1 flex items-baseline gap-2">
                   <span className="text-2xl font-extrabold text-white">
-                    <AnimatedCounter value={activeStudentsCount} /> / <AnimatedCounter value={students.length} />
+                    <AnimatedCounter value={metrics ? metrics.activeStudents : activeStudentsCount} /> / <AnimatedCounter value={metrics ? metrics.totalStudents : students.length} />
                   </span>
-                  <span className="text-[10px] text-indigo-400 font-semibold">+{pendingStudentsCount} {t('pending')}</span>
+                  <span className="text-[10px] text-indigo-400 font-semibold">+{metrics ? metrics.pendingStudents : pendingStudentsCount} {t('pending')}</span>
                 </div>
               </motion.div>
 
@@ -961,7 +976,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 <span className="text-[11px] font-bold text-slate-500 uppercase">{t('Educators')}</span>
                 <div className="mt-1 flex items-baseline gap-2">
                   <span className="text-2xl font-extrabold text-white">
-                    <AnimatedCounter value={teachers.length} />
+                    <AnimatedCounter value={metrics ? metrics.educatorsCount : teachers.length} />
                   </span>
                   <span className="text-[10px] text-teal-400 font-semibold">{t('100% On Duty')}</span>
                 </div>
@@ -980,7 +995,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 <span className="text-[11px] font-bold text-slate-500 uppercase">{t('Fees Receivable')}</span>
                 <div className="mt-1 flex items-baseline gap-2">
                   <span className="text-2xl font-extrabold text-white">
-                    <AnimatedCounter value={2140} prefix="₹" />
+                    <AnimatedCounter value={metrics ? metrics.totalOutstanding : 2140} prefix="₹" />
                   </span>
                   <span className="text-[10px] text-emerald-400 font-semibold">{t('+12% vs last term')}</span>
                 </div>
@@ -999,7 +1014,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 <span className="text-[11px] font-bold text-slate-500 uppercase">{t('Audit Records')}</span>
                 <div className="mt-1 flex items-baseline gap-2">
                   <span className="text-2xl font-extrabold text-white">
-                    <AnimatedCounter value={activityLogs.length} /> {t('Logged')}
+                    <AnimatedCounter value={metrics ? metrics.activityLogsCount : activityLogs.length} /> {t('Logged')}
                   </span>
                   <span className="text-[10px] text-amber-450 font-semibold">{t('Real-Time Sync')}</span>
                 </div>
@@ -1074,7 +1089,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   </svg>
                   <div className="absolute text-center">
                     <span className="text-lg font-extrabold text-white block">
-                      <AnimatedCounter value={2140} prefix="₹" />
+                      <AnimatedCounter value={metrics ? metrics.totalOutstanding : 2140} prefix="₹" />
                     </span>
                     <span className="text-[10px] text-slate-550 font-bold uppercase block">{t('Total')}</span>
                   </div>
