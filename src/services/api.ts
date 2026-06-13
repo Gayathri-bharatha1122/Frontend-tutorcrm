@@ -89,6 +89,17 @@ export const api = {
     return request('/admin/teachers');
   },
 
+  getCourses: () => {
+    return request('/admin/courses');
+  },
+
+  addCourse: (courseData: any) => {
+    return request('/admin/courses', {
+      method: 'POST',
+      body: JSON.stringify(courseData)
+    });
+  },
+
   // Tutor Dashboard
   getTutorStudents: () => {
     return request('/tutor/students');
