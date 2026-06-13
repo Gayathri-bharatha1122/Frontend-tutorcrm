@@ -12,7 +12,8 @@ interface AdminPageProps {
   adminDashboardElement?: React.ReactNode;
 }
 
-// ─── Courses Page ──────────────────�const CoursesPage: React.FC = () => {
+// ─── Courses Page ───────────────────
+const CoursesPage: React.FC = () => {
   const { t } = useLanguage();
   const [courses, setCourses] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -355,14 +356,6 @@ interface AdminPageProps {
           </>
         )}
       </AnimatePresence>
-    </div>
-  );
-}; </motion.tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
     </div>
   );
 };
