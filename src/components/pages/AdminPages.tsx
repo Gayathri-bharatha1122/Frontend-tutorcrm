@@ -197,7 +197,13 @@ const FeesPage: React.FC = () => {
           <p className="text-[11px] text-slate-500 mt-0.5">{t("All student tuition invoices and payment records")}</p>
         </div>
         {loading ? (
-          <div className="p-12 text-center text-slate-500 text-sm">{t("Loading payment records...")}</div>
+          <div className="flex flex-col items-center justify-center py-16 gap-3">
+            <div className="relative flex items-center justify-center w-10 h-10">
+              <div className="absolute inset-0 rounded-full border-2 border-indigo-500/20" />
+              <div className="absolute inset-0 rounded-full border-2 border-indigo-500 border-t-transparent animate-spin" />
+            </div>
+            <span className="text-xs text-slate-400 font-medium animate-pulse">{t("Loading payment records...")}</span>
+          </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">

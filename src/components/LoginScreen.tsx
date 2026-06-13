@@ -66,6 +66,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onNavi
   const [showPassword, setShowPassword] = useState(false);
   const [errorStatus, setErrorStatus] = useState<string | null>(null);
   const [typedMessage, setTypedMessage] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
   // Automatically update the prefilled credentials when changing roles
   React.useEffect(() => {
@@ -81,6 +82,8 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onNavi
       return;
     }
 
+    setLoading(true);
+    setErrorStatus(null);
     try {
       const response = await api.login({ email, password, role: selectedRole });
       localStorage.setItem('edumanage_token', response.token);
@@ -88,6 +91,8 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onNavi
       onLoginSuccess(selectedRole, response.user?.name || response.user?.firstName || undefined);
     } catch (err: any) {
       setErrorStatus(err.message || 'Invalid key token or database credential mismatch.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -99,8 +104,8 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onNavi
 
       {/* Brand logo back to landing link */}
       <div
-        onClick={() => onNavigate('landing')}
-        className="flex items-center gap-2.5 mb-10 cursor-pointer hover:scale-105 transition-all relative z-10"
+        onClick={() => !loading && onNavigate('landing')}
+        className={`flex items-center gap-2.5 mb-10 cursor-pointer hover:scale-105 transition-all relative z-10 ${loading ? 'pointer-events-none opacity-50' : ''}`}
       >
         <div className="w-9 h-9 rounded-lg bg-indigo-600 flex items-center justify-center">
           <GraduationCap className="h-5 w-5 text-white" />
@@ -128,11 +133,12 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onNavi
         </div>
 
         {/* Role Select Buttons */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-6 p-1 bg-slate-950/60 rounded-xl border border-slate-800">
+        <div className={`grid grid-cols-2 sm:grid-cols-4 gap-2 mb-6 p-1 bg-slate-950/60 rounded-xl border border-slate-800 ${loading ? 'pointer-events-none opacity-50' : ''}`}>
           {(['student', 'parent', 'tutor', 'admin'] as Role[]).map((role) => (
             <button
               key={role}
               type="button"
+              disabled={loading}
               onClick={() => {
                 setSelectedRole(role);
               }}
@@ -159,12 +165,13 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onNavi
               <input
                 type="email"
                 required
+                disabled={loading}
                 value={email}
                 onChange={(e) => {
                   setEmail(e.target.value);
                   setErrorStatus(null);
                 }}
-                className="w-full bg-slate-950/40 border border-slate-800 text-slate-200 text-sm pl-10 pr-4 py-2.5 rounded-xl focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-all font-mono input-focus-glow"
+                className="w-full bg-slate-950/40 border border-slate-800 disabled:opacity-50 disabled:cursor-not-allowed text-slate-200 text-sm pl-10 pr-4 py-2.5 rounded-xl focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-all font-mono input-focus-glow"
                 placeholder=""
               />
             </div>
@@ -181,18 +188,20 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onNavi
               <input
                 type={showPassword ? 'text' : 'password'}
                 required
+                disabled={loading}
                 value={password}
                 onChange={(e) => {
                   setPassword(e.target.value);
                   setErrorStatus(null);
                 }}
-                className="w-full bg-slate-950/40 border border-slate-800 text-slate-200 text-sm pl-10 pr-10 py-2.5 rounded-xl focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-all font-mono input-focus-glow"
+                className="w-full bg-slate-950/40 border border-slate-800 disabled:opacity-50 disabled:cursor-not-allowed text-slate-200 text-sm pl-10 pr-10 py-2.5 rounded-xl focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-all font-mono input-focus-glow"
                 placeholder=""
               />
               <button
                 type="button"
+                disabled={loading}
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-500 hover:text-slate-300 transition-colors"
+                className="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-500 hover:text-slate-300 disabled:opacity-50 transition-colors"
                 id="viewPasswordBtn"
               >
                 {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -231,27 +240,39 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onNavi
           <div className="flex gap-3 pt-2">
             <button
               type="button"
+              disabled={loading}
               onClick={() => onNavigate('landing')}
-              className="flex-1 py-3 bg-slate-950 border border-slate-800 hover:bg-slate-850 text-slate-300 font-semibold text-sm rounded-xl cursor-pointer transition-all hover:scale-[1.02] active:scale-[0.98] btn-shine-effect btn-ripple flex items-center justify-center gap-1.5"
+              className="flex-1 py-3 bg-slate-950 border border-slate-800 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-850 text-slate-300 font-semibold text-sm rounded-xl cursor-pointer transition-all hover:scale-[1.02] active:scale-[0.98] btn-shine-effect btn-ripple flex items-center justify-center gap-1.5"
             >
               <ArrowLeft className="h-4 w-4" /> {t('Back')}
             </button>
             <button
               type="submit"
-              className="flex-[2] py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-sm rounded-xl cursor-pointer shadow-lg shadow-indigo-600/20 transition-all hover:scale-[1.02] active:scale-[0.98] btn-shine-effect btn-ripple flex items-center justify-center gap-2 group"
+              disabled={loading}
+              className="flex-[2] py-3 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold text-sm rounded-xl cursor-pointer shadow-lg shadow-indigo-600/20 transition-all hover:scale-[1.02] active:scale-[0.98] btn-shine-effect btn-ripple flex items-center justify-center gap-2 group"
               id="loginSubmitBtn"
             >
-              {t('Access Portal')}
-              <ArrowRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
+              {loading ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin shrink-0" />
+                  {t('Authorizing...')}
+                </>
+              ) : (
+                <>
+                  {t('Access Portal')}
+                  <ArrowRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
+                </>
+              )}
             </button>
           </div>
         </form>
 
         {/* Dynamic Stepper switch backer */}
-        <div className="mt-6 pt-5 border-t border-slate-800 text-center text-xs text-slate-500 font-medium">
+        <div className={`mt-6 pt-5 border-t border-slate-800 text-center text-xs text-slate-500 font-medium ${loading ? 'pointer-events-none opacity-50' : ''}`}>
           <span>{t('New to our campus?')} </span>
           <button
             type="button"
+            disabled={loading}
             onClick={() => onNavigate('register')}
             className="text-indigo-400 hover:underline hover:text-indigo-300 transition-colors font-bold cursor-pointer"
           >

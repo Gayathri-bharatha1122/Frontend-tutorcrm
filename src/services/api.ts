@@ -26,7 +26,10 @@ const request = async (endpoint: string, options: RequestInit = {}) => {
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.error || `HTTP error! Status: ${response.status}`);
+    const errorMessage = errorData.error || `HTTP error! Status: ${response.status}`;
+    const error = new Error(errorMessage) as any;
+    error.status = response.status;
+    throw error;
   }
 
   return response.json();

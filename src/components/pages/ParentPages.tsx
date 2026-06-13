@@ -131,7 +131,13 @@ export const ParentPage: React.FC<ParentPageProps> = ({ pageKey, parentName, stu
             <IndianRupee className="h-4 w-4 text-amber-400" /> {t("Fee Ledger")}
           </h3>
           {loading ? (
-            <div className="text-center py-6 text-xs text-slate-500 font-semibold">{t('Loading billing records...')}</div>
+            <div className="flex flex-col items-center justify-center py-12 gap-3">
+              <div className="relative flex items-center justify-center w-10 h-10">
+                <div className="absolute inset-0 rounded-full border-2 border-indigo-500/20" />
+                <div className="absolute inset-0 rounded-full border-2 border-indigo-500 border-t-transparent animate-spin" />
+              </div>
+              <span className="text-xs text-slate-400 font-medium animate-pulse">{t("Loading billing records...")}</span>
+            </div>
           ) : bills.length === 0 ? (
             <div className="text-center py-6 text-xs text-slate-500 font-semibold">{t('No bills found.')}</div>
           ) : (

@@ -24,11 +24,21 @@ import { ParentPage } from './components/pages/ParentPages';
 
 
 export default function App() {
-  const [screen, setScreen] = useState<Screen>('landing');
-  const [activeRole, setActiveRole] = useState<Role>('student');
-  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
+  const [screen, setScreen] = useState<Screen>(() => {
+    const cached = localStorage.getItem('edumanage_screen');
+    return (cached as Screen) || 'landing';
+  });
+  const [activeRole, setActiveRole] = useState<Role>(() => {
+    const cached = localStorage.getItem('edumanage_role');
+    return (cached as Role) || 'student';
+  });
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(() => {
+    return !!localStorage.getItem('edumanage_token');
+  });
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [currentPath, setCurrentPath] = useState<string>('');
+  const [currentPath, setCurrentPath] = useState<string>(() => {
+    return localStorage.getItem('edumanage_path') || '';
+  });
 
   useEffect(() => {
     const token = localStorage.getItem('edumanage_token');
@@ -36,14 +46,38 @@ export default function App() {
       api.getCurrentUser().then(data => {
         const user = data.user || data;
         setActiveRole(user.role);
+        localStorage.setItem('edumanage_role', user.role);
         setCurrentProfileName(user.name || user.firstName);
         setIsLoggedIn(true);
-        if (user.role === 'admin') setScreen('admin');
-        else if (user.role === 'tutor') setScreen('tutor');
-        else if (user.role === 'parent') setScreen('parent');
-        else setScreen('student');
-      }).catch(() => {
-        localStorage.removeItem('edumanage_token');
+
+        const cachedScreen = localStorage.getItem('edumanage_screen');
+        if (!cachedScreen || ['landing', 'login', 'register'].includes(cachedScreen)) {
+          let targetScreen: Screen = 'student';
+          if (user.role === 'admin') targetScreen = 'admin';
+          else if (user.role === 'tutor') targetScreen = 'tutor';
+          else if (user.role === 'parent') targetScreen = 'parent';
+          
+          setScreen(targetScreen);
+          localStorage.setItem('edumanage_screen', targetScreen);
+          
+          const defaultPath = `/${user.role}/dashboard`;
+          setCurrentPath(defaultPath);
+          localStorage.setItem('edumanage_path', defaultPath);
+        }
+      }).catch((err: any) => {
+        console.error("Auth session check failed:", err);
+        // Only log out if it is an explicit auth error (401 or 403)
+        if (err.status === 401 || err.status === 403) {
+          localStorage.removeItem('edumanage_token');
+          localStorage.removeItem('edumanage_screen');
+          localStorage.removeItem('edumanage_role');
+          localStorage.removeItem('edumanage_path');
+          setIsLoggedIn(false);
+          setScreen('landing');
+        } else {
+          // Keep current logged-in screen if server/db connection is down
+          console.warn("Server unavailable. Retaining current session state.");
+        }
       }).finally(() => {
         setIsLoading(false);
       });
@@ -117,11 +151,14 @@ export default function App() {
   // Route screen selections
   const handleNavigate = (targetScreen: Screen, initialRole?: Role) => {
     setScreen(targetScreen);
+    localStorage.setItem('edumanage_screen', targetScreen);
     if (initialRole) {
       setActiveRole(initialRole);
+      localStorage.setItem('edumanage_role', initialRole);
     }
     // Reset path when navigating via top-level pages
     setCurrentPath('');
+    localStorage.removeItem('edumanage_path');
   };
 
   // Sidebar navigation handler (path based) with RBAC
@@ -138,70 +175,116 @@ export default function App() {
       // Redirect to their own dashboard
       const dashboardPath = `/${activeRole}/dashboard`;
       setCurrentPath(dashboardPath);
-      setScreen(activeRole);
+      localStorage.setItem('edumanage_path', dashboardPath);
+      setScreen(activeRole as Screen);
+      localStorage.setItem('edumanage_screen', activeRole);
       return;
     }
 
     setCurrentPath(path);
+    localStorage.setItem('edumanage_path', path);
     if (path.startsWith('/admin')) {
       setScreen('admin');
+      localStorage.setItem('edumanage_screen', 'admin');
     } else if (path.startsWith('/tutor')) {
       setScreen('tutor');
+      localStorage.setItem('edumanage_screen', 'tutor');
     } else if (path.startsWith('/parent')) {
       setScreen('parent');
+      localStorage.setItem('edumanage_screen', 'parent');
     } else if (path.startsWith('/student')) {
       setScreen('student');
+      localStorage.setItem('edumanage_screen', 'student');
     } else {
       // fallback to landing for unknown paths
       setScreen('landing');
+      localStorage.setItem('edumanage_screen', 'landing');
     }
   };
 
   const handleLoginSuccess = (role: Role, name?: string) => {
     setActiveRole(role);
+    localStorage.setItem('edumanage_role', role);
     setIsLoggedIn(true);
     // Resolve personal name tags corresponding to roles for display
+    let targetScreen: Screen = 'student';
     if (role === 'admin') {
       setCurrentProfileName(name || 'System Administrator');
-      setScreen('admin');
+      targetScreen = 'admin';
     } else if (role === 'tutor') {
       setCurrentProfileName(name || 'Prof. Alistair Miller');
-      setScreen('tutor');
+      targetScreen = 'tutor';
     } else if (role === 'parent') {
       setCurrentProfileName(name || 'Helena Thorne');
-      setScreen('parent');
+      targetScreen = 'parent';
     } else {
       setCurrentProfileName(name || 'Marcus Thorne');
-      setScreen('student');
+      targetScreen = 'student';
     }
+    setScreen(targetScreen);
+    localStorage.setItem('edumanage_screen', targetScreen);
+
+    const defaultPath = `/${role}/dashboard`;
+    setCurrentPath(defaultPath);
+    localStorage.setItem('edumanage_path', defaultPath);
   };
 
   const handleRegisteredSuccess = (role: Role, customName: string) => {
     setActiveRole(role);
+    localStorage.setItem('edumanage_role', role);
     setCurrentProfileName(customName);
     setIsLoggedIn(true);
     
+    let targetScreen: Screen = 'student';
     if (role === 'parent') {
-      setScreen('parent');
+      targetScreen = 'parent';
     } else {
-      setScreen('student');
+      targetScreen = 'student';
     }
+    setScreen(targetScreen);
+    localStorage.setItem('edumanage_screen', targetScreen);
+
+    const defaultPath = `/${role}/dashboard`;
+    setCurrentPath(defaultPath);
+    localStorage.setItem('edumanage_path', defaultPath);
   };
 
   const handleLogout = () => {
     localStorage.removeItem('edumanage_token');
+    localStorage.removeItem('edumanage_screen');
+    localStorage.removeItem('edumanage_role');
+    localStorage.removeItem('edumanage_path');
     setIsLoggedIn(false);
     setScreen('landing');
   };
 
   const handleHome = () => {
     setScreen('landing');
+    localStorage.setItem('edumanage_screen', 'landing');
+    localStorage.removeItem('edumanage_path');
   };
 
   const isPublicPage = ['landing', 'login', 'register'].includes(screen);
 
   if (isLoading) {
-    return <div className="min-h-screen bg-slate-950 flex items-center justify-center text-slate-400">Loading...</div>;
+    return (
+      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center relative overflow-hidden font-sans">
+        {/* Background Mesh */}
+        <div className="absolute inset-0 mesh-gradient-bg pointer-events-none z-0" />
+        
+        {/* Loader Body */}
+        <div className="relative z-10 flex flex-col items-center gap-6 p-8 rounded-3xl bg-slate-900/40 border border-slate-800/80 backdrop-blur-xl shadow-2xl">
+          <div className="relative flex items-center justify-center w-20 h-20">
+            <div className="spinner-glow" />
+            <div className="premium-spinner" />
+          </div>
+          <div className="flex flex-col items-center gap-1 text-center">
+            <span className="text-sm font-bold text-white tracking-wider uppercase">EduManage CRM</span>
+            <span className="text-xs text-slate-400 font-medium animate-pulse">Initializing Secure Database Session...</span>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
