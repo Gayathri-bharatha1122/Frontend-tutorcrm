@@ -1041,23 +1041,26 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     { period: 'May-Summer', count: 10, heightClass: 'h-[100%]', color: 'bg-gradient-to-t from-indigo-600 to-indigo-400 animate-pulse' },
                     { period: 'Fall Shift', count: 8, heightClass: 'h-[80%]', color: 'bg-slate-800' }
                   ].map((bar, i) => (
-                    <div key={i} className="flex-1 flex flex-col items-center gap-2 group cursor-pointer relative">
+                    <div key={i} className="flex-1 h-full flex flex-col items-center group cursor-pointer relative">
                       {/* Tooltip on hover */}
                       <div className="absolute -top-10 opacity-0 group-hover:opacity-100 transition duration-200 bg-indigo-600 text-white font-extrabold text-[10px] px-2.5 py-1 rounded shadow-lg z-20 pointer-events-none">
                         {t('{count} Students').replace('{count}', bar.count.toString())}
                       </div>
 
-                      {/* Visual column bar */}
-                      <motion.div
-                        initial={{ scaleY: 0 }}
-                        whileInView={{ scaleY: 1 }}
-                        viewport={{ once: true }}
-                        transition={{ delay: i * 0.1, duration: 0.6 }}
-                        className={`w-full rounded-t-lg origin-bottom transition-all duration-300 group-hover:brightness-110 ${bar.heightClass} ${bar.color}`}
-                      />
+                      {/* Bar container to allow percentage heights to resolve correctly */}
+                      <div className="flex-1 w-full flex items-end">
+                        {/* Visual column bar */}
+                        <motion.div
+                          initial={{ scaleY: 0 }}
+                          whileInView={{ scaleY: 1 }}
+                          viewport={{ once: true }}
+                          transition={{ delay: i * 0.1, duration: 0.6 }}
+                          className={`w-full rounded-t-lg origin-bottom transition-all duration-300 group-hover:brightness-110 ${bar.heightClass} ${bar.color}`}
+                        />
+                      </div>
 
                       {/* Label */}
-                      <span className="text-[10px] text-slate-500 font-semibold">{t(bar.period)}</span>
+                      <span className="text-[10px] text-slate-500 font-semibold mt-2">{t(bar.period)}</span>
                     </div>
                   ))}
                 </div>

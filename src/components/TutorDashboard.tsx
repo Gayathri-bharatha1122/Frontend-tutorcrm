@@ -59,11 +59,51 @@ interface TimetableSlot {
   subject?: string;
 }
 
-const TIMETABLE_SLOTS: TimetableSlot[] = [
-  { id: 'slot-1', title: 'Kinematic Vectors theory', schedule: 'Tuesdays at 3:00 PM', room: 'Room B1', subject: 'Physics' },
-  { id: 'slot-2', title: 'Quantum mechanics fundamentals', schedule: 'Thursdays at 3:00 PM', room: 'Lab Hall 1', subject: 'Physics' },
-  { id: 'slot-3', title: 'General electromagnetic finals prep', schedule: 'Fridays at 2:30 PM', room: 'Seminar Studio', isSpecial: true, subject: 'Physics' }
-];
+const getKolkataDateString = () => {
+  const options = { timeZone: 'Asia/Kolkata', year: 'numeric', month: '2-digit', day: '2-digit' } as const;
+  const parts = new Intl.DateTimeFormat('en-US', options).formatToParts(new Date());
+  const year = parts.find(p => p.type === 'year')?.value;
+  const month = parts.find(p => p.type === 'month')?.value;
+  const day = parts.find(p => p.type === 'day')?.value;
+  return `${year}-${month}-${day}`;
+};
+
+const generateSlots = (courses: string[], subject: string): TimetableSlot[] => {
+  const subjectLower = (subject || '').toLowerCase();
+  if (subjectLower.includes('physics') && courses.includes('Physics Mechanics')) {
+    return [
+      { id: 'slot-1', title: 'Kinematic Vectors theory', schedule: 'Tuesdays at 3:00 PM', room: 'Room B1', subject: 'Physics' },
+      { id: 'slot-2', title: 'Quantum mechanics fundamentals', schedule: 'Thursdays at 3:00 PM', room: 'Lab Hall 1', subject: 'Physics' },
+      { id: 'slot-3', title: 'General electromagnetic finals prep', schedule: 'Fridays at 2:30 PM', room: 'Seminar Studio', isSpecial: true, subject: 'Physics' }
+    ];
+  }
+
+  if (!courses || courses.length === 0) {
+    const cleanSub = subject || 'General';
+    return [
+      { id: 'slot-1', title: cleanSub + ' Core Discussion', schedule: 'Tuesdays at 3:00 PM', room: 'Room B1', subject: cleanSub },
+      { id: 'slot-2', title: cleanSub + ' Advanced Seminar', schedule: 'Thursdays at 3:00 PM', room: 'Lab Hall 1', subject: cleanSub },
+      { id: 'slot-3', title: cleanSub + ' Comprehensive Review', schedule: 'Fridays at 2:30 PM', room: 'Seminar Studio', isSpecial: true, subject: cleanSub }
+    ];
+  }
+
+  const slots: TimetableSlot[] = [];
+  if (courses.length === 1) {
+    const course = courses[0];
+    slots.push({ id: 'slot-1', title: course + ' Analysis & Discussion', schedule: 'Tuesdays at 3:00 PM', room: 'Room B1', subject: course });
+    slots.push({ id: 'slot-2', title: course + ' Core Concepts Study', schedule: 'Thursdays at 3:00 PM', room: 'Lab Hall 1', subject: course });
+    slots.push({ id: 'slot-3', title: course + ' Revision & Exam Prep', schedule: 'Fridays at 2:30 PM', room: 'Seminar Studio', isSpecial: true, subject: course });
+  } else if (courses.length === 2) {
+    slots.push({ id: 'slot-1', title: courses[0] + ' Core Seminar', schedule: 'Tuesdays at 3:00 PM', room: 'Room B1', subject: courses[0] });
+    slots.push({ id: 'slot-2', title: courses[1] + ' Practical Review', schedule: 'Thursdays at 3:00 PM', room: 'Lab Hall 1', subject: courses[1] });
+    slots.push({ id: 'slot-3', title: courses[0] + ' Advanced Prep', schedule: 'Fridays at 2:30 PM', room: 'Seminar Studio', isSpecial: true, subject: courses[0] });
+  } else {
+    slots.push({ id: 'slot-1', title: courses[0] + ' Concept Theory', schedule: 'Tuesdays at 3:00 PM', room: 'Room B1', subject: courses[0] });
+    slots.push({ id: 'slot-2', title: courses[1] + ' Advanced Workshop', schedule: 'Thursdays at 3:00 PM', room: 'Lab Hall 1', subject: courses[1] });
+    slots.push({ id: 'slot-3', title: courses[2] + ' Final Prep Seminar', schedule: 'Fridays at 2:30 PM', room: 'Seminar Studio', isSpecial: true, subject: courses[2] });
+  }
+  return slots;
+};
 
 export const TutorDashboard: React.FC<TutorDashboardProps> = ({
   tutorName,
@@ -71,9 +111,61 @@ export const TutorDashboard: React.FC<TutorDashboardProps> = ({
   onLogout,
   onHome
 }) => {
+  const { t } = useLanguage();
+
+  // Component States
   const [students, setStudents] = useState<Student[]>([]);
   const [publishedQuizzes, setPublishedQuizzes] = useState<any[]>([]);
+  const [tutorProfile, setTutorProfile] = useState<any>(null);
+  const [tutorCourses, setTutorCourses] = useState<string[]>([]);
+  
+  // Date and Time Slot selectors state
+  const [selectedDate, setSelectedDate] = useState<string>(getKolkataDateString());
+  const [selectedSlotId, setSelectedSlotId] = useState<string>('');
+  const [filteredSlots, setFilteredSlots] = useState<TimetableSlot[]>([]);
+  const [allSameSubject, setAllSameSubject] = useState<boolean>(false);
 
+  // Custom grading states
+  const [selectedStudentId, setSelectedStudentId] = useState('');
+  const [assignmentName, setAssignmentName] = useState('Rotational Force Vector Essays');
+  const [gradeScore, setGradeScore] = useState(90);
+  const [gradeFeedback, setGradeFeedback] = useState('Fabulous conceptual formulation of inertia variables! Continue high fidelity research.');
+  const [isGradingCompiled, setIsGradingCompiled] = useState(false);
+  const [assignedSuccessMsg, setAssignedSuccessMsg] = useState<string | null>(null);
+
+  // Scheduling states
+  const [showScheduleModal, setShowScheduleModal] = useState(false);
+  const [lectureTitle, setLectureTitle] = useState('Quantum Dynamics Core vectors');
+  const [lectureDate, setLectureDate] = useState('June 10, 2026');
+  const [lectureTime, setLectureTime] = useState('03:00 PM');
+  const [lectureLocation, setLectureLocation] = useState('Studio Hall 3');
+
+  // Quiz Builder states
+  const [quizSubject, setQuizSubject] = useState('Physics Mechanics');
+  const [quizTitle, setQuizTitle] = useState('Rotational Motion Basics');
+  const [quizQuestions, setQuizQuestions] = useState<Array<{
+    id: number;
+    text: string;
+    options: string[];
+    correctAnswer: string;
+  }>>([
+    {
+      id: 1,
+      text: 'What is the unit of angular momentum?',
+      options: ['kg m²/s', 'kg m/s', 'N m', 'J s²'],
+      correctAnswer: 'A'
+    }
+  ]);
+
+  // Current question inputs
+  const [newQuestionText, setNewQuestionText] = useState('');
+  const [optionA, setOptionA] = useState('');
+  const [optionB, setOptionB] = useState('');
+  const [optionC, setOptionC] = useState('');
+  const [optionD, setOptionD] = useState('');
+  const [correctOption, setCorrectOption] = useState('A');
+
+  // Fetch tutor student roster
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -85,16 +177,6 @@ export const TutorDashboard: React.FC<TutorDashboardProps> = ({
     };
     fetchData();
   }, []);
-  const { t } = useLanguage();
-  
-  // Date and Time Slot selectors state
-  const [selectedDate, setSelectedDate] = useState<string>('2026-06-03');
-  const [selectedSlotId, setSelectedSlotId] = useState<string>('');
-  const [tutorCourses, setTutorCourses] = useState<string[]>([]);
-  const [filteredSlots, setFilteredSlots] = useState<TimetableSlot[]>([]);
-  const [allSameSubject, setAllSameSubject] = useState<boolean>(false);
-
-  const [tutorProfile, setTutorProfile] = useState<any>(null);
 
   // Fetch tutor profile to determine courses
   useEffect(() => {
@@ -103,6 +185,54 @@ export const TutorDashboard: React.FC<TutorDashboardProps> = ({
         const profile = await api.getTutorProfile();
         setTutorProfile(profile);
         setTutorCourses(profile.courses || []);
+
+        // Dynamically adjust default values based on tutor's subject
+        if (profile.subject) {
+          const subjectLower = profile.subject.toLowerCase();
+          if (subjectLower.includes('english') || subjectLower.includes('literature') || subjectLower.includes('ap literature') || subjectLower.includes('ap english')) {
+            setAssignmentName('Shakespearean Tragedy Essay Analysis');
+            setGradeFeedback('Excellent analysis of thematic elements and character motivations. Well structured!');
+            setLectureTitle('Victorian Literature & Prose Analysis');
+            setQuizSubject('AP Literature');
+            setQuizTitle('AP English Literary Devices');
+            setQuizQuestions([
+              {
+                id: 1,
+                text: 'Which literary device refers to the attribution of human characteristics to non-human things?',
+                options: ['Personification', 'Alliteration', 'Metaphor', 'Hyperbole'],
+                correctAnswer: 'A'
+              }
+            ]);
+          } else if (subjectLower.includes('math') || subjectLower.includes('calculus') || subjectLower.includes('algebra')) {
+            setAssignmentName('Calculus Integration Techniques');
+            setGradeFeedback('Magnificent integration bounds implementation. Very clean derivation step-by-step.');
+            setLectureTitle('Advanced Limits & Continuity');
+            setQuizSubject('Calculus BC');
+            setQuizTitle('Derivatives & Rates of Change');
+            setQuizQuestions([
+              {
+                id: 1,
+                text: 'What is the derivative of sin(x) with respect to x?',
+                options: ['cos(x)', '-cos(x)', 'sec(x)', 'tan(x)'],
+                correctAnswer: 'A'
+              }
+            ]);
+          } else if (subjectLower.includes('chem') || subjectLower.includes('chemistry')) {
+            setAssignmentName('Organic Reactions & Synthesis');
+            setGradeFeedback('Excellent safety protocols in lab report and detailed mechanisms analysis.');
+            setLectureTitle('Acid-Base Equilibria Theory');
+            setQuizSubject('AP Chemistry Honors Lab');
+            setQuizTitle('Stoichiometry & Gas Laws');
+            setQuizQuestions([
+              {
+                id: 1,
+                text: 'What is the pH of a neutral solution at 25°C?',
+                options: ['7', '0', '14', '1'],
+                correctAnswer: 'A'
+              }
+            ]);
+          }
+        }
       } catch (err) {
         console.error('Failed to load tutor profile', err);
       }
@@ -112,24 +242,13 @@ export const TutorDashboard: React.FC<TutorDashboardProps> = ({
 
   // Update filtered slots when courses or slots list change
   useEffect(() => {
-    let slotsToUse = TIMETABLE_SLOTS;
-    
-    if (tutorCourses.length > 0) {
-      const baseSubject = tutorCourses[0].split(' ')[0].toLowerCase();
-      const matched = TIMETABLE_SLOTS.filter(slot =>
-        slot.subject && slot.subject.toLowerCase() === baseSubject
-      );
-      if (matched.length > 0) {
-        slotsToUse = matched;
-      }
-    }
-
+    const slotsToUse = generateSlots(tutorCourses, tutorProfile?.subject || '');
     setFilteredSlots(slotsToUse);
     setSelectedSlotId(slotsToUse[0]?.id || '');
     
     const subjects = new Set(slotsToUse.map(s => s.subject?.toLowerCase()).filter(Boolean));
     setAllSameSubject(subjects.size === 1);
-  }, [tutorCourses]);
+  }, [tutorCourses, tutorProfile]);
 
   // Structured attendance: Record<date, Record<slotId, Record<studentId, status>>>
   const [attendanceRecords, setAttendanceRecords] = useState<Record<string, Record<string, Record<string, 'Present' | 'Absent' | 'Excused'>>>>({
@@ -161,85 +280,90 @@ export const TutorDashboard: React.FC<TutorDashboardProps> = ({
     });
   };
 
-  const handleSubmitAttendance = () => {
+  // Select first loaded student by default
+  useEffect(() => {
+    if (students.length > 0 && !students.some(s => s.id === selectedStudentId)) {
+      setSelectedStudentId(students[0].id);
+    }
+  }, [students, selectedStudentId]);
+
+  const handleSubmitAttendance = async () => {
     const slot = filteredSlots.find(s => s.id === selectedSlotId);
     if (!slot) return;
-    setAssignedSuccessMsg(
-      t('Attendance roll for "{title}" on {date} submitted successfully. Parent notifications dispatched.')
-        .replace('{title}', t(slot.title))
-        .replace('{date}', selectedDate)
-    );
+    
+    try {
+      for (const student of students) {
+        const status = getStudentStatus(student.id);
+        await api.markAttendance(student.id, status, selectedDate);
+      }
+      
+      setAssignedSuccessMsg(
+        t('Attendance roll for "{title}" on {date} submitted successfully. Parent notifications dispatched.')
+          .replace('{title}', t(slot.title))
+          .replace('{date}', selectedDate)
+      );
+      
+      const studentsData = await api.getTutorStudents();
+      setStudents(studentsData);
+    } catch (err: any) {
+      alert(`Error submitting attendance: ${err.message}`);
+    }
     setTimeout(() => setAssignedSuccessMsg(null), 5000);
   };
-  
-  // Custom grading states
-  const [selectedStudentId, setSelectedStudentId] = useState('ST001');
-  const [assignmentName, setAssignmentName] = useState('Rotational Force Vector Essays');
-  const [gradeScore, setGradeScore] = useState(90);
-  const [gradeFeedback, setGradeFeedback] = useState('Fabulous conceptual formulation of inertia variables! Continue high fidelity research.');
-  const [isGradingCompiled, setIsGradingCompiled] = useState(false);
-  const [assignedSuccessMsg, setAssignedSuccessMsg] = useState<string | null>(null);
 
-  // Scheduling states
-  const [showScheduleModal, setShowScheduleModal] = useState(false);
-  const [lectureTitle, setLectureTitle] = useState('Quantum Dynamics Core vectors');
-  const [lectureDate, setLectureDate] = useState('June 10, 2026');
-  const [lectureTime, setLectureTime] = useState('03:00 PM');
-  const [lectureLocation, setLectureLocation] = useState('Studio Hall 3');
-
-  const handleGradeAssignmentSubmit = (e: React.FormEvent) => {
+  const handleGradeAssignmentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const student = students.find(s => s.id === selectedStudentId);
     if (!student) return;
 
     setIsGradingCompiled(true);
-    setTimeout(() => {
-      setIsGradingCompiled(false);
+    try {
+      await api.gradeAssignment({
+        studentId: selectedStudentId,
+        assignmentName,
+        score: gradeScore,
+        feedback: gradeFeedback
+      });
+      
       setAssignedSuccessMsg(
         t('Successfully logged assignment score of {score}% for "{name}". Progress metrics updated.')
           .replace('{score}', gradeScore.toString())
           .replace('{name}', student.name)
       );
+      
+      const studentsData = await api.getTutorStudents();
+      setStudents(studentsData);
+    } catch (err: any) {
+      alert(`Error compiling grade: ${err.message}`);
+    } finally {
+      setIsGradingCompiled(false);
       setTimeout(() => setAssignedSuccessMsg(null), 4000);
-    }, 1500);
-  };
-
-  const handleScheduleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setShowScheduleModal(false);
-    setAssignedSuccessMsg(
-      t('Scheduled lectures on "{title}" hosted on {date} at {time} successfully.')
-        .replace('{title}', lectureTitle)
-        .replace('{date}', lectureDate)
-        .replace('{time}', lectureTime)
-    );
-    setTimeout(() => setAssignedSuccessMsg(null), 4000);
-  };
-
-  // Quiz Builder states
-  const [quizSubject, setQuizSubject] = useState('Physics Mechanics');
-  const [quizTitle, setQuizTitle] = useState('Rotational Motion Basics');
-  const [quizQuestions, setQuizQuestions] = useState<Array<{
-    id: number;
-    text: string;
-    options: string[];
-    correctAnswer: string;
-  }>>([
-    {
-      id: 1,
-      text: 'What is the unit of angular momentum?',
-      options: ['kg m²/s', 'kg m/s', 'N m', 'J s²'],
-      correctAnswer: 'A'
     }
-  ]);
-  
-  // Current question inputs
-  const [newQuestionText, setNewQuestionText] = useState('');
-  const [optionA, setOptionA] = useState('');
-  const [optionB, setOptionB] = useState('');
-  const [optionC, setOptionC] = useState('');
-  const [optionD, setOptionD] = useState('');
-  const [correctOption, setCorrectOption] = useState('A');
+  };
+
+  const handleScheduleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      await api.scheduleLecture({
+        title: lectureTitle,
+        date: lectureDate,
+        time: lectureTime,
+        location: lectureLocation
+      });
+      
+      setAssignedSuccessMsg(
+        t('Scheduled lectures on "{title}" hosted on {date} at {time} successfully.')
+          .replace('{title}', lectureTitle)
+          .replace('{date}', lectureDate)
+          .replace('{time}', lectureTime)
+      );
+    } catch (err: any) {
+      alert(`Error scheduling lecture: ${err.message}`);
+    } finally {
+      setShowScheduleModal(false);
+      setTimeout(() => setAssignedSuccessMsg(null), 4000);
+    }
+  };
 
   const handleAddQuestion = (e: React.FormEvent) => {
     e.preventDefault();
@@ -441,21 +565,21 @@ export const TutorDashboard: React.FC<TutorDashboardProps> = ({
               </div>
 
               <div className="divide-y divide-slate-850">
-                {students.slice(0, 4).map((student, sIdx) => (
+                {students.map((student, sIdx) => (
                   <motion.div 
                     key={student.id}
                     initial={{ opacity: 0, y: 8 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: Math.min(sIdx * 0.05, 0.4), duration: 0.3 }}
-                    className="py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-slate-950/20 px-2.5 transition rounded-xl"
+                    className="py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-slate-955/20 px-2.5 transition rounded-xl"
                   >
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-slate-950 border border-slate-850 flex items-center justify-center font-bold text-teal-400">
+                      <div className="w-7 h-7 rounded-full bg-slate-950 border border-slate-850 flex items-center justify-center font-bold text-teal-400">
                         {student.name[0]}
                       </div>
                       <div>
                         <span className="text-xs font-bold text-white block">{student.name}</span>
-                        <span className="text-[10px] text-slate-500 block">{t(student.grade)} • {t('Registered in Advanced physics')}</span>
+                        <span className="text-[10px] text-slate-500 block">{t(student.grade)} • {t('Registered in')} {t(student.subject)}</span>
                       </div>
                     </div>
 
@@ -513,7 +637,7 @@ export const TutorDashboard: React.FC<TutorDashboardProps> = ({
                   onChange={(e) => setSelectedStudentId(e.target.value)}
                   className="w-full bg-slate-955 border border-slate-855 text-xs p-2.5 rounded-xl outline-none focus:border-teal-500 text-slate-350"
                 >
-                  {students.slice(0, 4).map((s) => (
+                  {students.map((s) => (
                     <option key={s.id} value={s.id}>
                       {s.name} ({t(s.grade)})
                     </option>
@@ -655,10 +779,15 @@ export const TutorDashboard: React.FC<TutorDashboardProps> = ({
                     onChange={(e) => setQuizSubject(e.target.value)}
                     className="w-full bg-slate-950 border border-slate-850 text-xs p-2.5 rounded-xl outline-none focus:border-teal-500 text-slate-350"
                   >
-                    <option value="Physics Mechanics">{t('Physics Mechanics')}</option>
-                    <option value="Quantum Dynamics">{t('Quantum Dynamics')}</option>
-                    <option value="Calculus BC">{t('Calculus BC')}</option>
-                    <option value="Electromagnetism">{t('Electromagnetism')}</option>
+                    {tutorCourses.length > 0 ? (
+                      tutorCourses.map(course => (
+                        <option key={course} value={course}>
+                          {t(course)}
+                        </option>
+                      ))
+                    ) : (
+                      <option value="General">{t('General')}</option>
+                    )}
                   </select>
                 </div>
                 <div>
@@ -851,11 +980,13 @@ export const TutorDashboard: React.FC<TutorDashboardProps> = ({
         <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6">
           <div className="mb-4">
             <h3 className="text-sm font-bold text-white">{t('Lecture Timetable')}</h3>
-            <span className="text-[11px] text-slate-550 block">{t('Assigned academic slots for active physics curricula')}</span>
+            <span className="text-[11px] text-slate-550 block">
+              {t('Assigned academic slots for active {subject} curricula').replace('{subject}', tutorProfile?.subject ? t(tutorProfile.subject) : t('assigned'))}
+            </span>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {TIMETABLE_SLOTS.map((slot, index) => {
+            {filteredSlots.map((slot, index) => {
               const isSpecial = slot.isSpecial;
               return (
                 <motion.div 

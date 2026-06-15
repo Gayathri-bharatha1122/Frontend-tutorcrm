@@ -105,10 +105,10 @@ export const api = {
     return request('/tutor/students');
   },
 
-  markAttendance: (studentId: string, status: 'Present' | 'Absent' | 'Excused') => {
+  markAttendance: (studentId: string, status: 'Present' | 'Absent' | 'Excused', date?: string) => {
     return request('/tutor/attendance', {
       method: 'POST',
-      body: JSON.stringify({ studentId, status })
+      body: JSON.stringify({ studentId, status, date })
     });
   },
 
