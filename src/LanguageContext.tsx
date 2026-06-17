@@ -284,6 +284,8 @@ const translations: Record<Language, Record<string, string>> = {
     "Assistant searching FAQ files...": "అసిస్టెంట్ తరచుగా అడిగే ప్రశ్నల ఫైల్‌లను వెతుకుతోంది...",
     "EduManage AI Support": "EduManage AI మద్దతు",
     "Offline Assistant": "ఆఫ్‌లైన్ అసిస్టెంట్",
+    "Online Assistant": "ఆన్‌లైన్ అసిస్టెంట్",
+    "AI Assistant is thinking...": "ఏఐ అసిస్టెంట్ ఆలోచిస్తోంది...",
     "Quick Questions": "శీఘ్ర ప్రశ్నలు",
     "Ask about attendance, fees, messaging...": "హాజరు, ఫీజులు, సందేశాల గురించి అడగండి...",
 
@@ -863,6 +865,8 @@ const translations: Record<Language, Record<string, string>> = {
     "Assistant searching FAQ files...": "सहायक अक्सर पूछे जाने वाले प्रश्नों की फ़ाइलें खोज रहा है...",
     "EduManage AI Support": "एडुमैनेज एआई सहायता",
     "Offline Assistant": "ऑफ़लाइन सहायक",
+    "Online Assistant": "ऑनलाइन सहायक",
+    "AI Assistant is thinking...": "एआई सहायक सोच रहा है...",
     "Quick Questions": "त्वरित प्रश्न",
     "Ask about attendance, fees, messaging...": "उपस्थिति, शुल्क, संदेश के बारे में पूछें...",
 

@@ -2,6 +2,8 @@ import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { MessageSquare, X, Send, Bot, Sparkles, HelpCircle } from 'lucide-react';
 import { useLanguage } from '../LanguageContext';
+import { api } from '../services/api';
+
 
 interface Message {
   sender: 'user' | 'bot';
@@ -59,26 +61,42 @@ export const AIChatBox: React.FC = () => {
     scrollToBottom();
   }, [messages, isTyping]);
 
-  const handleResponse = (userText: string) => {
+  const handleResponse = async (userText: string, updatedHistory: Message[]) => {
     setIsTyping(true);
-    const lowercaseInput = userText.toLowerCase();
+    try {
+      // Map history to sender and text format expected by backend API
+      const apiHistory = updatedHistory.map((msg) => ({
+        sender: msg.sender,
+        text: msg.text,
+      }));
 
-    // Check for keyword matches
-    const matchedQA = defaultQA.find((item) =>
-      item.keywords.some((keyword) => lowercaseInput.includes(keyword))
-    );
+      const response = await api.chatWithAI(userText, apiHistory);
+      const botResponse: Message = {
+        sender: 'bot',
+        text: response.text || "No response received.",
+        time: response.time || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      };
+      setMessages((prev) => [...prev, botResponse]);
+    } catch (error) {
+      console.error("AI Chat error, falling back to offline QA:", error);
+      const lowercaseInput = userText.toLowerCase();
 
-    setTimeout(() => {
+      // Check for keyword matches
+      const matchedQA = defaultQA.find((item) =>
+        item.keywords.some((keyword) => lowercaseInput.includes(keyword))
+      );
+
       const botResponse: Message = {
         sender: 'bot',
         text: matchedQA
           ? matchedQA.answer
-          : "I am operating in offline mode. Please click one of the quick questions below, or try searching for keywords like 'attendance', 'fees', 'message', 'materials', or 'results'.",
+          : "I am having trouble connecting to my service, and am operating in offline mode. Please click one of the quick questions below, or try searching for keywords like 'attendance', 'fees', 'message', 'materials', or 'results'.",
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       };
       setMessages((prev) => [...prev, botResponse]);
+    } finally {
       setIsTyping(false);
-    }, 600);
+    }
   };
 
   const handleSendMessage = (e: React.FormEvent) => {
@@ -91,10 +109,11 @@ export const AIChatBox: React.FC = () => {
       time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     };
 
-    setMessages((prev) => [...prev, userMessage]);
+    const updatedHistory = [...messages, userMessage];
+    setMessages(updatedHistory);
     const currentInput = input;
     setInput('');
-    handleResponse(currentInput);
+    handleResponse(currentInput, updatedHistory);
   };
 
   const handleQuestionClick = (questionText: string) => {
@@ -104,8 +123,9 @@ export const AIChatBox: React.FC = () => {
       time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     };
 
-    setMessages((prev) => [...prev, userMessage]);
-    handleResponse(questionText);
+    const updatedHistory = [...messages, userMessage];
+    setMessages(updatedHistory);
+    handleResponse(questionText, updatedHistory);
   };
 
   return (
@@ -128,7 +148,10 @@ export const AIChatBox: React.FC = () => {
                   <h4 className="text-xs font-bold text-white flex items-center gap-1">
                     {t('EduManage AI Support')} <Sparkles className="h-3 w-3 text-indigo-400 animate-pulse" />
                   </h4>
-                  <span className="text-[9px] text-slate-500 font-semibold uppercase block tracking-wider">{t('Offline Assistant')}</span>
+                  <div className="flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span className="text-[9px] text-emerald-400 font-semibold uppercase block tracking-wider">{t('Online Assistant')}</span>
+                  </div>
                 </div>
               </div>
               <button
@@ -166,7 +189,7 @@ export const AIChatBox: React.FC = () => {
                     <span className="w-1 h-1 bg-slate-500 rounded-full animate-bounce [animation-delay:0.2s]"></span>
                     <span className="w-1 h-1 bg-slate-500 rounded-full animate-bounce [animation-delay:0.4s]"></span>
                   </div>
-                  <span>{t('Assistant searching FAQ files...')}</span>
+                  <span>{t('AI Assistant is thinking...')}</span>
                 </div>
               )}
               <div ref={messagesEndRef} />
